@@ -5,6 +5,7 @@
 * Needed tooling
   * poetry
   * pre-commit
+  * mise
 
 * Installing dependancies
 

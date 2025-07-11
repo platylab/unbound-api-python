@@ -35,5 +35,5 @@ make test
 * Use venv to run commands
 
 ```bash
-poetry env une python
+poetry shell
 ```

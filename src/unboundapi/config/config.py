@@ -32,24 +32,26 @@ class ZeroIDError(ConfigEntryError):
 
 class ConfigEntry:
     __allowed_clauses = {
-        "server:",
-        "remote-control:",
-        "forward-zone:",
-        "auth-zone:",
-        "module-config:",
+        "server",
+        "remote-control",
+        "forward-zone",
+        "auth-zone",
+        "module-config",
         "dnscrypt",
     }
 
     def __init__(self, entry: str, line_nb: str = "unspecified"):
-        self.line_nb = line_nb
-        self.raw = entry
+        self.line_nb = str(line_nb)
+        self.raw = str(entry)
         self.attribute = ""
-        self.data = {"id": "", "value": ""}
-        self.clean()
+        self.id = ""
+        self.value = ""
+        self.get_raw()
         self.get_attribute()
-        self.get_data()
+        self.get_id()
+        self.get_value()
 
-    def clean(self) -> str:
+    def get_raw(self) -> str:
         self.raw = re.sub(r"\s+", " ", self.raw.strip())
         if self.raw.startswith("#"):
             self.raw = ""
@@ -67,21 +69,22 @@ class ConfigEntry:
         The ID is defined for a non-clause attribute by '#ID', and should be an non-zero integer
         Returns the ID or 0 if malformated, unspecified or is a clause
         """
+        self.id = 0
         if self.is_main_clause():
-            return 0
+            return self.id
         else:
             last_part = self.raw.split(" ")[-1]
             if last_part.startswith("#"):
                 try:
-                    attr_id = int(last_part[1:])
-                    if attr_id == 0:
+                    self.id = int(last_part[1:])
+                    if self.id == 0:
                         raise ZeroIDError(self.attribute, self.line_nb)
-                    return attr_id
+                    return self.id
                 except ValueError:
                     raise MalformedIDError(self.attribute, self.line_nb, last_part)
-                    return 0
+                    return self.id
             else:
-                return 0
+                return self.id
 
     def get_value(self) -> str:
         """
@@ -97,12 +100,8 @@ class ConfigEntry:
                     break
                 else:
                     value.append(item)
-        return " ".join(value).strip('"')
-
-    def get_data(self) -> dict:
-        self.data["id"] = str(self.get_id())
-        self.data["value"] = self.get_value()
-        return self.data
+        self.value = " ".join(value)
+        return self.value
 
 
 class Config:

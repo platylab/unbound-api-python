@@ -16,7 +16,7 @@ make install
 * Adding dependancies
 
 ```bash
-poetry add <dedendancy>
+poetry add <dependancy>
 ```
 
 * Update dependancies
@@ -30,4 +30,10 @@ make update
 ```bash
 make check
 make test
+```
+
+* Use venv to run commands
+
+```bash
+poetry env une python
 ```

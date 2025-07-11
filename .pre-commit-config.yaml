@@ -49,6 +49,8 @@ repos:
     hooks:
       - id: pyright
         stages: [pre-commit]
+        additional_dependencies: [poetry]
+        entry: poetry run pyright
 
   - repo: https://github.com/tox-dev/tox-ini-fmt
     rev: "1.5.0"

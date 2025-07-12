@@ -136,7 +136,7 @@ class UnboundConfig:
             if len(clause_lines) > 2:
                 lines_to_write += clause_lines
         with open(target_file, "w") as file:
-            for line in lines_to_write:
+            for line in lines_to_write[:-1]:
                 file.write(line + "\n")
         return target_file
 

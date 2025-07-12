@@ -51,6 +51,18 @@ class ConfigEntry:
         self.get_id()
         self.get_value()
 
+    def to_dict(self):
+        return {
+            "line_nb": self.line_nb,
+            "raw": self.raw,
+            "attribute": self.attribute,
+            "value": self.value,
+            "id": self.id,
+        }
+
+    def __str__(self):
+        return str(self.to_dict())
+
     def get_raw(self) -> str:
         self.raw = re.sub(r"\s+", " ", self.raw.strip())
         if self.raw.startswith("#"):

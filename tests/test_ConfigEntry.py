@@ -1,4 +1,4 @@
-from unboundapi.config import ConfigEntry, MalformedIDError, ZeroIDError
+from unboundapi.config.ConfigEntry import ConfigEntry, MalformedIDError, ZeroIDError
 
 test_data = [
     {

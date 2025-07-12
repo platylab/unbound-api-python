@@ -13,7 +13,7 @@ test_data = [
             "raw": "server:",
             "attribute": "server",
             "value": "",
-            "id": 0,
+            "id": "0",
         },
         "error": {
             "MalformedIDError": False,
@@ -21,10 +21,10 @@ test_data = [
         },
     },
     {
-        "id": "clause_remote-control",
+        "id": "clause_remote-control_spaces_before",
         "input": {
             "line_nb": "1",
-            "entry": "remote-control:",
+            "entry": "       remote-control:",
         },
         "output": {
             "is_main_clause": True,
@@ -32,7 +32,7 @@ test_data = [
             "raw": "remote-control:",
             "attribute": "remote-control",
             "value": "",
-            "id": 0,
+            "id": "0",
         },
         "error": {
             "MalformedIDError": False,
@@ -51,7 +51,7 @@ test_data = [
             "raw": "forward-zone:",
             "attribute": "forward-zone",
             "value": "",
-            "id": 0,
+            "id": "0",
         },
         "error": {
             "MalformedIDError": False,
@@ -70,26 +70,7 @@ test_data = [
             "raw": "auth-zone:",
             "attribute": "auth-zone",
             "value": "",
-            "id": 0,
-        },
-        "error": {
-            "MalformedIDError": False,
-            "ZeroIDError": False,
-        },
-    },
-    {
-        "id": "clause_module-config_spaces_before",
-        "input": {
-            "line_nb": "",
-            "entry": "    module-config:",
-        },
-        "output": {
-            "is_main_clause": True,
-            "line_nb": "unspecified",
-            "raw": "module-config:",
-            "attribute": "module-config",
-            "value": "",
-            "id": 0,
+            "id": "0",
         },
         "error": {
             "MalformedIDError": False,
@@ -108,7 +89,7 @@ test_data = [
             "raw": "dnscrypt:",
             "attribute": "dnscrypt",
             "value": "",
-            "id": 0,
+            "id": "0",
         },
         "error": {
             "MalformedIDError": False,
@@ -127,7 +108,7 @@ test_data = [
             "raw": 'include: "/etc/unbound/server.d/*" #unsupported',
             "attribute": "include",
             "value": '"/etc/unbound/server.d/*"',
-            "id": 0,
+            "id": "0",
         },
         "error": {
             "MalformedIDError": True,
@@ -146,7 +127,7 @@ test_data = [
             "raw": "port: 53 #0",
             "attribute": "port",
             "value": "53",
-            "id": 0,
+            "id": "0",
         },
         "error": {
             "MalformedIDError": False,
@@ -165,7 +146,7 @@ test_data = [
             "raw": 'local-zone: "test.example.com." static #7',
             "attribute": "local-zone",
             "value": '"test.example.com." static',
-            "id": 7,
+            "id": "7",
         },
         "error": {
             "MalformedIDError": False,
@@ -184,7 +165,7 @@ test_data = [
             "raw": 'local-data: "server.test.example.com. IN A 192.168.69.69" #666',
             "attribute": "local-data",
             "value": '"server.test.example.com. IN A 192.168.69.69"',
-            "id": 666,
+            "id": "666",
         },
         "error": {
             "MalformedIDError": False,

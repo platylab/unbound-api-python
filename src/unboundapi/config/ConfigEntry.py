@@ -10,7 +10,7 @@ class ConfigEntryError(Exception):
 class MalformedIDError(ConfigEntryError):
     """Raised when the ID is malformed."""
 
-    def __init__(self, attribute, line, value):
+    def __init__(self, attribute: str, line: str, value: str):
         self.attribute = attribute
         self.line = line
         self.value = value
@@ -22,7 +22,7 @@ class MalformedIDError(ConfigEntryError):
 class ZeroIDError(ConfigEntryError):
     """Raised when the ID is zero."""
 
-    def __init__(self, attribute, line):
+    def __init__(self, attribute: str, line: str):
         self.attribute = attribute
         self.line = line
         super().__init__(
@@ -36,7 +36,6 @@ class ConfigEntry:
         "remote-control",
         "forward-zone",
         "auth-zone",
-        "module-config",
         "dnscrypt",
     }
 
@@ -51,7 +50,7 @@ class ConfigEntry:
         self.get_id()
         self.get_value()
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {
             "line_nb": self.line_nb,
             "raw": self.raw,
@@ -60,7 +59,7 @@ class ConfigEntry:
             "id": self.id,
         }
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.to_dict())
 
     def get_raw(self) -> str:
@@ -76,20 +75,20 @@ class ConfigEntry:
     def is_main_clause(self) -> bool:
         return self.attribute in ConfigEntry.__allowed_clauses
 
-    def get_id(self) -> int:
+    def get_id(self) -> str:
         """
         The ID is defined for a non-clause attribute by '#ID', and should be an non-zero integer
         Returns the ID or 0 if malformated, unspecified or is a clause
         """
-        self.id = 0
+        self.id = "0"
         if self.is_main_clause():
             return self.id
         else:
             last_part = self.raw.split(" ")[-1]
             if last_part.startswith("#"):
                 try:
-                    self.id = int(last_part[1:])
-                    if self.id == 0:
+                    self.id = str(int(last_part[1:]))
+                    if self.id == "0":
                         raise ZeroIDError(self.attribute, self.line_nb)
                     return self.id
                 except ValueError:

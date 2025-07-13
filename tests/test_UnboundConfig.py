@@ -8,18 +8,19 @@ from unboundapi.config.UnboundConfig import (
 import filecmp
 
 input_file = "tests/files/test_UnboundConfig/input.conf"
-output_file = "tests/files/test_UnboundConfig/output.conf"
-target_file = "tests/files/test_UnboundConfig/target.conf"
 
 config = UnboundConfig(input_file)
 
 
-def test_met__make():
+def test_met__make_before():
+    target_file = "tests/files/test_UnboundConfig/before_target.conf"
+    output_file = "tests/files/test_UnboundConfig/before_output.conf"
     config.make(output_file)
     assert filecmp.cmp(target_file, output_file, shallow=False)
 
 
-def test_met__validate():
+def test_met__validate_before():
+    output_file = "tests/files/test_UnboundConfig/before_output.conf"
     result = config.validate(output_file)
     assert result.returncode == 0, f"STDERR   : {result.stderr}"
 
@@ -420,3 +421,16 @@ def test_met__delete_value():
             test = {"output": output, "error": error}
             target = data["target"]
         assert test == target, f"{data['id']}: {test} != {target}"
+
+
+def test_met__make_after():
+    target_file = "tests/files/test_UnboundConfig/after_target.conf"
+    output_file = "tests/files/test_UnboundConfig/after_output.conf"
+    config.make(output_file)
+    assert filecmp.cmp(target_file, output_file, shallow=False)
+
+
+def test_met__validate_after():
+    output_file = "tests/files/test_UnboundConfig/after_output.conf"
+    result = config.validate(output_file)
+    assert result.returncode == 0, f"STDERR   : {result.stderr}"

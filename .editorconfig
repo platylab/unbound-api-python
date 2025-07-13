@@ -28,6 +28,6 @@ indent_size = 2
 indent_style = tab
 tab_width = 4
 
-[{input,output,target}.conf]
+[*{input,output,target}.conf]
 indent_style = unset
 indent_size = unset

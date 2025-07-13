@@ -195,4 +195,4 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python
 
 # Do not include testing files
-output.conf
+*output.conf

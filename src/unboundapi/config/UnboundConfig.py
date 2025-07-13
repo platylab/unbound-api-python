@@ -189,6 +189,16 @@ class UnboundConfig:
         except KeyError:
             raise UnknownIDError(attribute, value_id)
 
+    def get_attribute(self, clause: str, attribute: str) -> dict:
+        """
+        Returns all values for a given attribute
+        """
+        if clause not in UnboundConfig.__supported_attributes.keys():
+            raise UnsupportedClauseError(clause)
+        elif attribute not in UnboundConfig.__supported_attributes[clause].keys():
+            raise UnsupportedAttributeError(clause, attribute)
+        return getattr(self, clause.replace("-", "_"))[attribute]
+
     def create_value(
         self,
         clause: str,
@@ -200,6 +210,7 @@ class UnboundConfig:
         Creates a new attribute/value pair with specified ID
         If the ID is already used, raise DuplicateIDError
         If no ID is specified, get the first available one
+        Can create new attributes with ID=1
         """
         try:
             if clause not in UnboundConfig.__supported_attributes.keys():
@@ -232,37 +243,63 @@ class UnboundConfig:
         self,
         clause: str,
         attribute: str,
-        value_id: str,
         value: str,
+        value_id: str = "",
     ) -> dict:
         """
         Updates value with specified ID
         If the ID is not found, raise UnknownIDError
+        Replace whole attribute if no id is specified
         """
+        answer = dict()
         if clause not in UnboundConfig.__supported_attributes.keys():
             raise UnsupportedClauseError(clause)
         elif attribute not in UnboundConfig.__supported_attributes[clause].keys():
             raise UnsupportedAttributeError(clause, attribute)
-        old_value = self.get_value(clause, attribute, value_id)
-        getattr(self, clause.replace("-", "_"))[attribute][value_id] = value
-        return {
-            "id": value_id,
-            "old_value": old_value,
-            "new_value": value,
-        }
 
-    def delete_value(self, clause: str, attribute: str, value_id: str) -> dict:
+        if value_id:
+            old_value = self.get_value(clause, attribute, value_id)
+            getattr(self, clause.replace("-", "_"))[attribute][value_id] = value
+            answer[value_id] = {
+                "id": value_id,
+                "old_value": old_value,
+                "new_value": value,
+            }
+        else:
+            for old_id, old_value in self.get_attribute(clause, attribute).items():
+                if old_id == "1":
+                    answer["1"] = {
+                        "id": "1",
+                        "old_value": old_value,
+                        "new_value": value,
+                    }
+                else:
+                    answer[old_id] = {
+                        "id": old_id,
+                        "old_value": old_value,
+                        "new_value": "",
+                    }
+            getattr(self, clause.replace("-", "_"))[attribute] = {"1": value}
+        return answer
+
+    def delete_value(self, clause: str, attribute: str, value_id: str = "") -> dict:
         """
         Deletes value with specified ID
         If the ID is not found, raise UnknownIDError
+        Can delete complete attribute if no id is specified
         """
+        answer = dict()
         if clause not in UnboundConfig.__supported_attributes.keys():
             raise UnsupportedClauseError(clause)
         elif attribute not in UnboundConfig.__supported_attributes[clause].keys():
             raise UnsupportedAttributeError(clause, attribute)
-        old_value = self.get_value(clause, attribute, value_id)
-        getattr(self, clause.replace("-", "_"))[attribute].pop(value_id)
-        return {
-            "id": value_id,
-            "old_value": old_value,
-        }
+
+        if value_id:
+            old_value = self.get_value(clause, attribute, value_id)
+            getattr(self, clause.replace("-", "_"))[attribute].pop(value_id)
+            answer[value_id] = {"id": value_id, "old_value": old_value}
+        else:
+            for old_id, old_value in self.get_attribute(clause, attribute).items():
+                answer[old_id] = {"id": old_id, "old_value": old_value}
+            getattr(self, clause.replace("-", "_"))[attribute] = {}
+        return answer

@@ -10,7 +10,7 @@ authors = ["Arthur Réauté <arthur@platy.bzh>"]
 readme = "README.md"
 
 [tool.poetry.scripts]
-unbound-cli = "unboundapi.main:main"
+unbound-cli = "unboundapi.main:cli"
 
 [tool.poetry.dependencies]
 python = ">=3.10"

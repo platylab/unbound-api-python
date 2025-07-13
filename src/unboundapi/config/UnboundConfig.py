@@ -199,11 +199,31 @@ class UnboundConfig:
         """
         Creates a new attribute/value pair with specified ID
         If the ID is already used, raise DuplicateIDError
+        If no ID is specified, get the first available one
         """
         try:
+            if clause not in UnboundConfig.__supported_attributes.keys():
+                raise UnsupportedClauseError(clause)
+            elif attribute not in UnboundConfig.__supported_attributes[clause].keys():
+                raise UnsupportedAttributeError(clause, attribute)
             self.get_value(clause, attribute, value_id)
         except UnknowedIDError:
+            # If no ID is specified, use the first available
+            if not value_id:
+                i = 0
+                while i < 1000:
+                    i += 1
+                    try:
+                        self.get_value(clause, attribute, str(i))
+                    except UnknowedIDError:
+                        value_id = str(i)
+                        break
+                if i == 1000:
+                    raise RuntimeError(
+                        f"You have more that 1000 entries for the attribute {attribute}",
+                    )
             getattr(self, clause.replace("-", "_"))[attribute][value_id] = value
+
         else:
             raise DuplicateIDError(value_id, attribute)
         return {"id": value_id}

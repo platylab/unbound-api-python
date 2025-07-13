@@ -2,6 +2,8 @@ from unboundapi.config.UnboundConfig import (
     UnboundConfig,
     DuplicateIDError,
     UnknowedIDError,
+    UnsupportedClauseError,
+    UnsupportedAttributeError,
 )
 import filecmp
 
@@ -78,6 +80,21 @@ def test_met__create_value():
             },
         },
         {
+            "id": "create_without_id",
+            "input": {
+                "clause": "server",
+                "attribute": "local-data",
+                "value": '"www.test.example.com. IN A 1.2.3.4"',
+                "value_id": "",
+            },
+            "target": {
+                "output": {
+                    "id": "44",
+                },
+                "error": "",
+            },
+        },
+        {
             "id": "already_exists",
             "input": {
                 "clause": "forward-zone",
@@ -88,6 +105,32 @@ def test_met__create_value():
             "target": {
                 "output": {},
                 "error": "DuplicateIDError",
+            },
+        },
+        {
+            "id": "error_UnsupportedClause",
+            "input": {
+                "clause": "unsupported-clause",
+                "attribute": "something",
+                "value": "something",
+                "value_id": "1",
+            },
+            "target": {
+                "output": {},
+                "error": "UnsupportedClauseError",
+            },
+        },
+        {
+            "id": "error_UnsupportedAttribute",
+            "input": {
+                "clause": "server",
+                "attribute": "forward-addr",
+                "value": "something",
+                "value_id": "1",
+            },
+            "target": {
+                "output": {},
+                "error": "UnsupportedAttributeError",
             },
         },
     ]
@@ -104,6 +147,10 @@ def test_met__create_value():
             )
         except DuplicateIDError:
             error = "DuplicateIDError"
+        except UnsupportedClauseError:
+            error = "UnsupportedClauseError"
+        except UnsupportedAttributeError:
+            error = "UnsupportedAttributeError"
         finally:
             test = {"output": output, "error": error}
             target = data["target"]

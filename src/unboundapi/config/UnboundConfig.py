@@ -11,13 +11,44 @@ class UnboundConfigError(Exception):
 class DuplicateIDError(UnboundConfigError):
     """Raised when a duplicate ID has been found"""
 
-    def __init__(self, attribute: str, line: str, id: str):
+    def __init__(self, value_id: str, attribute: str, line: str = ""):
+        self.id = value_id
         self.attribute = attribute
         self.line = line
-        self.id = id
-        super().__init__(
-            f"Found duplicate ID #{self.id} for attribute {self.attribute} line {self.line}",
-        )
+        if line:
+            msg = f"Duplicate ID #{self.id} for attribute {self.attribute} line {self.line}"
+        else:
+            msg = f"Duplicate ID #{self.id} for attribute {self.attribute}"
+        super().__init__(msg)
+
+
+class UnknowedIDError(UnboundConfigError):
+    """Raised when the specified ID does not exist"""
+
+    def __init__(self, attribute: str, value_id: str):
+        self.id = value_id
+        self.attribute = attribute
+        msg = f"Unknown ID #{self.id} for attribute {self.attribute}"
+        super().__init__(msg)
+
+
+class UnsupportedClauseError(UnboundConfigError):
+    """Raised when the specified clause is not supported"""
+
+    def __init__(self, clause: str):
+        self.clause = clause
+        msg = f'Unsupported clause "{self.clause}"'
+        super().__init__(msg)
+
+
+class UnsupportedAttributeError(UnboundConfigError):
+    """Raised when the specified attribute does not exist"""
+
+    def __init__(self, clause: str, attribute: str):
+        self.clause = clause
+        self.attribute = attribute
+        msg = f'Unsupported attribute "{self.attribute}" in clause "{self.clause}"'
+        super().__init__(msg)
 
 
 class UnboundConfig:
@@ -112,7 +143,7 @@ class UnboundConfig:
                             entry.value
                         )
                     else:
-                        raise DuplicateIDError(entry.attribute, entry.line_nb, entry.id)
+                        raise DuplicateIDError(entry.id, entry.attribute, entry.line_nb)
 
     def clear(self):
         """Clear the current configuration data."""
@@ -147,3 +178,59 @@ class UnboundConfig:
             capture_output=True,
             text=True,
         )
+
+    def get_value(self, clause: str, attribute: str, value_id: str) -> str:
+        """
+        Returns the value for a given attribute and ID.
+        If the ID is not found, raise UnknownIDError
+        """
+        try:
+            return getattr(self, clause.replace("-", "_"))[attribute][value_id]
+        except KeyError:
+            raise UnknowedIDError(attribute, value_id)
+
+    def create_value(
+        self,
+        clause: str,
+        attribute: str,
+        value: str,
+        value_id: str = "",
+    ) -> dict:
+        """
+        Creates a new attribute/value pair with specified ID
+        If the ID is already used, raise DuplicateIDError
+        """
+        try:
+            self.get_value(clause, attribute, value_id)
+        except UnknowedIDError:
+            getattr(self, clause.replace("-", "_"))[attribute][value_id] = value
+        else:
+            raise DuplicateIDError(value_id, attribute)
+        return {"id": value_id}
+
+    def update_value(
+        self,
+        clause: str,
+        attribute: str,
+        value_id: str,
+        value: str,
+    ) -> dict:
+        """
+        Updates value with specified ID
+        If the ID is not found, raise UnknownIDError
+        """
+        return dict()
+
+    def delete_value(self, clause: str, attribute: str, value_id: str) -> dict:
+        """
+        Deletes value with specified ID
+        If the ID is not found, raise UnknownIDError
+        """
+        return dict()
+
+    # def set_value(self, clause: str, attribute: str, id: str, value: str) -> dict:
+    #     """
+    #     Sets the value for a given attribute and ID.
+    #     Updates if ID exists and create if new ID.
+    #     """
+    #     pass

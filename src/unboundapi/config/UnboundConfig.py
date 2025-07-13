@@ -1,5 +1,6 @@
 from unboundapi.config.ConfigEntry import ConfigEntry
 import subprocess
+import os
 
 
 class UnboundConfigError(Exception):
@@ -48,6 +49,16 @@ class UnsupportedAttributeError(UnboundConfigError):
         self.clause = clause
         self.attribute = attribute
         msg = f'Unsupported attribute "{self.attribute}" in clause "{self.clause}"'
+        super().__init__(msg)
+
+
+class ValidateError(UnboundConfigError):
+    """Raised when the generated config is not valid"""
+
+    def __init__(self, target_file: str, stderr: str):
+        self.target_file = target_file
+        self.stderr = stderr
+        msg = f'The generated config file "{self.target_file}" is not valid\nSTDERR : {self.stderr}'
         super().__init__(msg)
 
 
@@ -171,13 +182,36 @@ class UnboundConfig:
                 file.write(line + "\n")
         return target_file
 
-    def validate(self, target_file: str) -> subprocess.CompletedProcess:
+    def validate(
+        self,
+        target_file: str = "/etc/unboud/unboud.conf",
+    ) -> subprocess.CompletedProcess:
         """Verify that the created file is valid with unboud-checkconf"""
         return subprocess.run(
             ["unbound-checkconf", target_file],
             capture_output=True,
             text=True,
         )
+
+    def reload_service(self, service_name: str = "unbound.service"):
+        """
+        Reloads the unbound service
+        Raise the error subprocess.CalledProcessError if failed
+        """
+        subprocess.run(["systemctl", "reload", service_name], check=True)
+
+    def apply(self, target_file: str, tmp_file: str):
+        """
+        Generates a temporary file and validate it
+        If OK, replaces the target_file and reloads unbound service
+        """
+        self.make(tmp_file)
+        result = self.validate(tmp_file)
+        if result.returncode == 0:
+            os.replace(tmp_file, target_file)
+            self.reload_service()
+        else:
+            raise ValidateError(tmp_file, result.stderr)
 
     def get_value(self, clause: str, attribute: str, value_id: str) -> str:
         """

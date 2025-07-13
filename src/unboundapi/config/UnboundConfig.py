@@ -1,6 +1,19 @@
 from unboundapi.config.ConfigEntry import ConfigEntry
 import subprocess
 import os
+import shutil
+
+
+def cross_device_replace(src, dst):
+    try:
+        os.replace(src, dst)
+    except OSError as e:
+        if e.errno == 18:  # EXDEV - cross-device link
+            # Fall back to copy + delete
+            shutil.copy2(src, dst)
+            os.unlink(src)
+        else:
+            raise
 
 
 class UnboundConfigError(Exception):
@@ -103,7 +116,7 @@ class UnboundConfig:
         },
     }
 
-    def __init__(self, config_file: str = "/etc/unboud/unboud.conf"):
+    def __init__(self, config_file: str = "/etc/unbound/unbound.conf"):
         self.remote_control = UnboundConfig.__supported_attributes["remote-control"]
         self.forward_zone = UnboundConfig.__supported_attributes["forward-zone"]
         self.auth_zone = UnboundConfig.__supported_attributes["auth-zone"]
@@ -123,7 +136,7 @@ class UnboundConfig:
             "server": self.server,
         }
 
-    def __load_config(self, config_file: str = "/etc/unboud/unboud.conf"):
+    def __load_config(self, config_file: str = "/etc/unbound/unbound.conf"):
         self.remote_control = UnboundConfig.__supported_attributes["remote-control"]
         self.forward_zone = UnboundConfig.__supported_attributes["forward-zone"]
         self.auth_zone = UnboundConfig.__supported_attributes["auth-zone"]
@@ -161,7 +174,7 @@ class UnboundConfig:
         for attribute in UnboundConfig.__supported_attributes.keys():
             getattr(self, attribute.replace("-", "_")).clear()
 
-    def reload_config(self, config_file: str = "/etc/unboud/unboud.conf"):
+    def reload_config(self, config_file: str = "/etc/unbound/unbound.conf"):
         self.clear()
         self.__load_config(config_file)
 
@@ -184,7 +197,7 @@ class UnboundConfig:
 
     def validate(
         self,
-        target_file: str = "/etc/unboud/unboud.conf",
+        target_file: str = "/etc/unbound/unbound.conf",
     ) -> subprocess.CompletedProcess:
         """Verify that the created file is valid with unboud-checkconf"""
         return subprocess.run(
@@ -203,13 +216,12 @@ class UnboundConfig:
     def apply(self, target_file: str, tmp_file: str):
         """
         Generates a temporary file and validate it
-        If OK, replaces the target_file and reloads unbound service
+        If OK, replaces the target_file
         """
         self.make(tmp_file)
         result = self.validate(tmp_file)
         if result.returncode == 0:
-            os.replace(tmp_file, target_file)
-            self.reload_service()
+            cross_device_replace(tmp_file, target_file)
         else:
             raise ValidateError(tmp_file, result.stderr)
 

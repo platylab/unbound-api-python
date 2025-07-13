@@ -89,5 +89,26 @@ def value(operation, attribute, clause, value, value_id, config_file):
         click.echo(msg, err=True)
 
 
+@cli.command()
+@click.option(
+    "-f",
+    "--config-file",
+    default="/etc/unbound/unbound.conf",
+    help="Unbound config file (default: /etc/unbound/unbound.conf)",
+)
+def reload(config_file):
+    """
+    Reloading the unbound service with new config if the config is valid
+    """
+    config = get_config(config_file)
+    result = config.validate(config_file)
+    if result.returncode == 0:
+        click.echo("Valid config, reloading service...")
+        config.reload_service()
+        click.echo("Success !")
+    else:
+        click.echo(f"Invalid config :\n{result.stderr}", err=True)
+
+
 if __name__ == "__main__":
     cli()

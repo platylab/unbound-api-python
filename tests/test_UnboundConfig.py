@@ -240,4 +240,76 @@ def test_met__update_value():
 
 
 def test_met__delete_value():
-    assert True
+    test_data = [
+        {
+            "id": "successful_delete",
+            "input": {
+                "clause": "server",
+                "attribute": "local-data",
+                "value_id": "15",
+            },
+            "target": {
+                "output": {
+                    "id": "15",
+                    "old_value": '"ipamaster.adm.platylab.com. IN A 10.10.10.55"',
+                },
+                "error": "",
+            },
+        },
+        {
+            "id": "error_UnknownID",
+            "input": {
+                "clause": "forward-zone",
+                "attribute": "forward-addr",
+                "value_id": "35",
+            },
+            "target": {
+                "output": {},
+                "error": "UnknownIDError",
+            },
+        },
+        {
+            "id": "error_UnsupportedClause",
+            "input": {
+                "clause": "unsupported-clause",
+                "attribute": "something",
+                "value_id": "1",
+            },
+            "target": {
+                "output": {},
+                "error": "UnsupportedClauseError",
+            },
+        },
+        {
+            "id": "error_UnsupportedAttribute",
+            "input": {
+                "clause": "server",
+                "attribute": "forward-addr",
+                "value_id": "1",
+            },
+            "target": {
+                "output": {},
+                "error": "UnsupportedAttributeError",
+            },
+        },
+    ]
+
+    for data in test_data:
+        output = dict()
+        error = ""
+        try:
+            output = config.delete_value(
+                clause=data["input"]["clause"],
+                attribute=data["input"]["attribute"],
+                value_id=data["input"]["value_id"],
+            )
+        except UnknownIDError:
+            error = "UnknownIDError"
+        except UnsupportedClauseError:
+            error = "UnsupportedClauseError"
+        except UnsupportedAttributeError:
+            error = "UnsupportedAttributeError"
+        finally:
+            test = {"output": output, "error": error}
+            target = data["target"]
+        assert test == target, f"{data['id']}: {test} != {target}"

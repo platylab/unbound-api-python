@@ -256,11 +256,13 @@ class UnboundConfig:
         Deletes value with specified ID
         If the ID is not found, raise UnknownIDError
         """
-        return {"id": value_id}
-
-    # def set_value(self, clause: str, attribute: str, id: str, value: str) -> dict:
-    #     """
-    #     Sets the value for a given attribute and ID.
-    #     Updates if ID exists and create if new ID.
-    #     """
-    #     pass
+        if clause not in UnboundConfig.__supported_attributes.keys():
+            raise UnsupportedClauseError(clause)
+        elif attribute not in UnboundConfig.__supported_attributes[clause].keys():
+            raise UnsupportedAttributeError(clause, attribute)
+        old_value = self.get_value(clause, attribute, value_id)
+        getattr(self, clause.replace("-", "_"))[attribute].pop(value_id)
+        return {
+            "id": value_id,
+            "old_value": old_value,
+        }

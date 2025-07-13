@@ -1,7 +1,7 @@
 from unboundapi.config.UnboundConfig import (
     UnboundConfig,
     DuplicateIDError,
-    UnknowedIDError,
+    UnknownIDError,
     UnsupportedClauseError,
     UnsupportedAttributeError,
 )
@@ -39,7 +39,7 @@ def test_met__get_value():
             "input": {"clause": "server", "attribute": "local-zone", "value_id": "7"},
             "target": {
                 "value": "",
-                "error": "UnknowedIDError",
+                "error": "UnknownIDError",
             },
         },
     ]
@@ -53,9 +53,9 @@ def test_met__get_value():
                 attribute=data["input"]["attribute"],
                 value_id=data["input"]["value_id"],
             )
-        except UnknowedIDError:
+        except UnknownIDError:
             value = ""
-            error = "UnknowedIDError"
+            error = "UnknownIDError"
         finally:
             test = {"value": value, "error": error}
             target = data["target"]
@@ -158,7 +158,85 @@ def test_met__create_value():
 
 
 def test_met__update_value():
-    assert True
+    test_data = [
+        {
+            "id": "successful_update",
+            "input": {
+                "clause": "server",
+                "attribute": "local-zone",
+                "value_id": "5",
+                "value": '"ipa.platylab.com." transparent',
+            },
+            "target": {
+                "output": {
+                    "id": "5",
+                    "old_value": '"ipa.platylab.com." typetransparent',
+                    "new_value": '"ipa.platylab.com." transparent',
+                },
+                "error": "",
+            },
+        },
+        {
+            "id": "error_UnknownID",
+            "input": {
+                "clause": "forward-zone",
+                "attribute": "forward-addr",
+                "value_id": "35",
+                "value": "1.1.1.1",
+            },
+            "target": {
+                "output": {},
+                "error": "UnknownIDError",
+            },
+        },
+        {
+            "id": "error_UnsupportedClause",
+            "input": {
+                "clause": "unsupported-clause",
+                "attribute": "something",
+                "value_id": "1",
+                "value": "something",
+            },
+            "target": {
+                "output": {},
+                "error": "UnsupportedClauseError",
+            },
+        },
+        {
+            "id": "error_UnsupportedAttribute",
+            "input": {
+                "clause": "server",
+                "attribute": "forward-addr",
+                "value_id": "1",
+                "value": "something",
+            },
+            "target": {
+                "output": {},
+                "error": "UnsupportedAttributeError",
+            },
+        },
+    ]
+
+    for data in test_data:
+        output = dict()
+        error = ""
+        try:
+            output = config.update_value(
+                clause=data["input"]["clause"],
+                attribute=data["input"]["attribute"],
+                value_id=data["input"]["value_id"],
+                value=data["input"]["value"],
+            )
+        except UnknownIDError:
+            error = "UnknownIDError"
+        except UnsupportedClauseError:
+            error = "UnsupportedClauseError"
+        except UnsupportedAttributeError:
+            error = "UnsupportedAttributeError"
+        finally:
+            test = {"output": output, "error": error}
+            target = data["target"]
+        assert test == target, f"{data['id']}: {test} != {target}"
 
 
 def test_met__delete_value():

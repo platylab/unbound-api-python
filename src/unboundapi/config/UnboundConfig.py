@@ -22,7 +22,7 @@ class DuplicateIDError(UnboundConfigError):
         super().__init__(msg)
 
 
-class UnknowedIDError(UnboundConfigError):
+class UnknownIDError(UnboundConfigError):
     """Raised when the specified ID does not exist"""
 
     def __init__(self, attribute: str, value_id: str):
@@ -187,7 +187,7 @@ class UnboundConfig:
         try:
             return getattr(self, clause.replace("-", "_"))[attribute][value_id]
         except KeyError:
-            raise UnknowedIDError(attribute, value_id)
+            raise UnknownIDError(attribute, value_id)
 
     def create_value(
         self,
@@ -207,7 +207,7 @@ class UnboundConfig:
             elif attribute not in UnboundConfig.__supported_attributes[clause].keys():
                 raise UnsupportedAttributeError(clause, attribute)
             self.get_value(clause, attribute, value_id)
-        except UnknowedIDError:
+        except UnknownIDError:
             # If no ID is specified, use the first available
             if not value_id:
                 i = 0
@@ -215,7 +215,7 @@ class UnboundConfig:
                     i += 1
                     try:
                         self.get_value(clause, attribute, str(i))
-                    except UnknowedIDError:
+                    except UnknownIDError:
                         value_id = str(i)
                         break
                 if i == 1000:
@@ -239,14 +239,24 @@ class UnboundConfig:
         Updates value with specified ID
         If the ID is not found, raise UnknownIDError
         """
-        return dict()
+        if clause not in UnboundConfig.__supported_attributes.keys():
+            raise UnsupportedClauseError(clause)
+        elif attribute not in UnboundConfig.__supported_attributes[clause].keys():
+            raise UnsupportedAttributeError(clause, attribute)
+        old_value = self.get_value(clause, attribute, value_id)
+        getattr(self, clause.replace("-", "_"))[attribute][value_id] = value
+        return {
+            "id": value_id,
+            "old_value": old_value,
+            "new_value": value,
+        }
 
     def delete_value(self, clause: str, attribute: str, value_id: str) -> dict:
         """
         Deletes value with specified ID
         If the ID is not found, raise UnknownIDError
         """
-        return dict()
+        return {"id": value_id}
 
     # def set_value(self, clause: str, attribute: str, id: str, value: str) -> dict:
     #     """

@@ -22,68 +22,97 @@ def configure(clause, attribute, value_id):
         try:
             int(value_id)
         except ValueError:
-            return jsonify(
-                {"error": "UnknownIDError", "reason": "ID must be an integer"},
-            ), 400
+            http_code = 400
+            body = {
+                "error": "UnknownIDError",
+                "reason": "ID must be an integer",
+                "status": http_code,
+            }
+            return jsonify(body), http_code
 
     try:
         if request.method == "POST":
             if not request.json or "value" not in request.json:
-                return jsonify({"error": "Value is required"}), 400
+                http_code = 400
+                body = {
+                    "error": "MissingValueError",
+                    "reason": "value is required in json payload",
+                    "status": http_code,
+                }
+                return jsonify(body), 400
             value = request.get_json().get("value")
-            return jsonify(
-                {
-                    "items": unbound_config(
-                        "create",
-                        clause,
-                        attribute,
-                        value,
-                        value_id=value_id,
-                    ),
-                },
-            ), 201
+            http_code = 201
+            body = {
+                "items": unbound_config("create", clause, attribute, value, value_id),
+                "status": http_code,
+            }
+            return jsonify(body), http_code
 
         elif request.method == "GET":
-            return jsonify(
-                {"items": unbound_config("read", clause, attribute, value_id=value_id)},
-            ), 200
+            http_code = 200
+            body = {
+                "items": unbound_config("read", clause, attribute, value_id=value_id),
+                "status": http_code,
+            }
+            return jsonify(body), http_code
 
         elif request.method == "PUT":
             if not request.json or "value" not in request.json:
-                return jsonify({"error": "Value is required"}), 400
+                http_code = 400
+                body = {
+                    "error": "MissingValueError",
+                    "reason": "value is required in json payload",
+                    "status": http_code,
+                }
+                return jsonify(body), 400
             value = request.get_json().get("value")
-            return jsonify(
-                {
-                    "items": unbound_config(
-                        "update",
-                        clause,
-                        attribute,
-                        value,
-                        value_id=value_id,
-                    ),
-                },
-            ), 200
+            http_code = 200
+            body = {
+                "items": unbound_config("update", clause, attribute, value, value_id),
+                "status": http_code,
+            }
+            return jsonify(body), http_code
 
         elif request.method == "DELETE":
-            return jsonify(
-                {
-                    "items": unbound_config(
-                        "delete",
-                        clause,
-                        attribute,
-                        value_id=value_id,
-                    ),
-                },
-            ), 200
+            http_code = 200
+            body = {
+                "items": unbound_config("delete", clause, attribute, value_id=value_id),
+                "status": http_code,
+            }
+            return jsonify(body), http_code
 
     except DuplicateIDError as e:
-        return jsonify({"error": "DuplicateIDError", "reason": str(e)}), 409
+        http_code = 409
+        body = {
+            "error": "DuplicateIDError",
+            "reason": str(e),
+            "status": http_code,
+        }
+        return jsonify(body), http_code
     except UnknownIDError as e:
-        return jsonify({"error": "UnknownIDError", "reason": str(e)}), 404
+        http_code = 404
+        body = {
+            "error": "UnknownIDError",
+            "reason": str(e),
+            "status": http_code,
+        }
+        return jsonify(body), http_code
     except UnsupportedClauseError as e:
-        return jsonify({"error": "UnsupportedClauseError", "reason": str(e)}), 404
+        http_code = 404
+        body = {
+            "error": "UnsupportedClauseError",
+            "reason": str(e),
+            "status": http_code,
+        }
+        return jsonify(body), http_code
     except UnsupportedAttributeError as e:
-        return jsonify({"error": "UnsupportedAttributeError", "reason": str(e)}), 404
+        http_code = 404
+        body = {
+            "error": "UnsupportedAttributeError",
+            "reason": str(e),
+            "status": http_code,
+        }
+        return jsonify(body), http_code
 
 
 if __name__ == "__main__":

@@ -12,10 +12,10 @@ app.config["DEBUG"] = True
 
 
 @app.route(
-    "/api/v1/<clause>/<attribute>/<value_id>",
+    "/config/<clause>/<attribute>/<value_id>",
     methods=["GET", "POST", "PUT", "DELETE"],
 )
-def handle_attribute(clause, attribute, value_id):
+def configure(clause, attribute, value_id):
     if value_id == "*":
         value_id = ""
     else:

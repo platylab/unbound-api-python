@@ -77,13 +77,13 @@ def handle_attribute(clause, attribute, value_id):
             ), 200
 
     except DuplicateIDError as e:
-        return jsonify({"error": "DuplicateIDError", "reason": str(e)}), 400
+        return jsonify({"error": "DuplicateIDError", "reason": str(e)}), 406
     except UnknownIDError as e:
-        return jsonify({"error": "UnknownIDError", "reason": str(e)}), 400
+        return jsonify({"error": "UnknownIDError", "reason": str(e)}), 404
     except UnsupportedClauseError as e:
-        return jsonify({"error": "UnsupportedClauseError", "reason": str(e)}), 400
+        return jsonify({"error": "UnsupportedClauseError", "reason": str(e)}), 404
     except UnsupportedAttributeError as e:
-        return jsonify({"error": "UnsupportedAttributeError", "reason": str(e)}), 400
+        return jsonify({"error": "UnsupportedAttributeError", "reason": str(e)}), 404
 
 
 if __name__ == "__main__":

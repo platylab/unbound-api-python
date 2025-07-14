@@ -77,7 +77,7 @@ def handle_attribute(clause, attribute, value_id):
             ), 200
 
     except DuplicateIDError as e:
-        return jsonify({"error": "DuplicateIDError", "reason": str(e)}), 406
+        return jsonify({"error": "DuplicateIDError", "reason": str(e)}), 409
     except UnknownIDError as e:
         return jsonify({"error": "UnknownIDError", "reason": str(e)}), 404
     except UnsupportedClauseError as e:

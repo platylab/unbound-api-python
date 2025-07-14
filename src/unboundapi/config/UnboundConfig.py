@@ -51,7 +51,7 @@ class UnsupportedClauseError(UnboundConfigError):
 
     def __init__(self, clause: str):
         self.clause = clause
-        msg = f'Unsupported clause "{self.clause}"'
+        msg = f"Unsupported clause {self.clause}"
         super().__init__(msg)
 
 
@@ -61,7 +61,7 @@ class UnsupportedAttributeError(UnboundConfigError):
     def __init__(self, clause: str, attribute: str):
         self.clause = clause
         self.attribute = attribute
-        msg = f'Unsupported attribute "{self.attribute}" in clause "{self.clause}"'
+        msg = f"Unsupported attribute {self.attribute} in clause {self.clause}"
         super().__init__(msg)
 
 
@@ -76,53 +76,84 @@ class ValidateError(UnboundConfigError):
 
 
 class UnboundConfig:
-    __supported_attributes = {
-        "remote-control": {
-            "control-enable": dict(),
-            "control-interface": dict(),
-            "control-port": dict(),
-            "server-key-file": dict(),
-            "server-cert-file": dict(),
-            "control-key-file": dict(),
-            "control-cert-file": dict(),
-        },
-        "forward-zone": {
-            "name": dict(),
-            "forward-addr": dict(),
-        },
-        "auth-zone": {
-            "name": dict(),
-        },
-        "dnscrypt": {
-            "dnscrypt-enable": dict(),
-            "dnscrypt-port": dict(),
-        },
-        "server": {
-            "module-config": dict(),
-            "interface": dict(),
-            "port": dict(),
-            "prefer-ip4": dict(),
-            "do-ip4": dict(),
-            "do-ip6": dict(),
-            "do-udp": dict(),
-            "do-tcp": dict(),
-            "access-control": dict(),
-            "interface-action": dict(),
-            "serve-expired": dict(),
-            "serve-expired-ttl": dict(),
-            "serve-expired-client-timeout": dict(),
-            "local-zone": dict(),
-            "local-data": dict(),
-        },
-    }
-
     def __init__(self, config_file: str = "/etc/unbound/unbound.conf"):
-        self.remote_control = UnboundConfig.__supported_attributes["remote-control"]
-        self.forward_zone = UnboundConfig.__supported_attributes["forward-zone"]
-        self.auth_zone = UnboundConfig.__supported_attributes["auth-zone"]
-        self.dnscrypt = UnboundConfig.__supported_attributes["dnscrypt"]
-        self.server = UnboundConfig.__supported_attributes["server"]
+        self.__supported_attributes = {
+            "remote-control": [
+                "control-enable",
+                "control-interface",
+                "control-port",
+                "server-key-file",
+                "server-cert-file",
+                "control-key-file",
+                "control-cert-file",
+            ],
+            "forward-zone": [
+                "name",
+                "forward-addr",
+            ],
+            "auth-zone": [
+                "name",
+            ],
+            "dnscrypt": [
+                "dnscrypt-enable",
+                "dnscrypt-port",
+            ],
+            "server": [
+                "module-config",
+                "interface",
+                "port",
+                "prefer-ip4",
+                "do-ip4",
+                "do-ip6",
+                "do-udp",
+                "do-tcp",
+                "access-control",
+                "interface-action",
+                "serve-expired",
+                "serve-expired-ttl",
+                "serve-expired-client-timeout",
+                "local-zone",
+                "local-data",
+            ],
+        }
+        self.remote_control = dict(
+            zip(
+                self.__supported_attributes["remote-control"],
+                [dict() for i in self.__supported_attributes["remote-control"]],
+            ),
+        )
+        self.forward_zone = dict(
+            zip(
+                self.__supported_attributes["forward-zone"],
+                [dict() for i in self.__supported_attributes["forward-zone"]],
+            ),
+        )
+        self.auth_zone = dict(
+            zip(
+                self.__supported_attributes["auth-zone"],
+                [dict() for i in self.__supported_attributes["auth-zone"]],
+            ),
+        )
+        self.dnscrypt = dict(
+            zip(
+                self.__supported_attributes["dnscrypt"],
+                [dict() for i in self.__supported_attributes["dnscrypt"]],
+            ),
+        )
+        self.server = dict(
+            zip(
+                self.__supported_attributes["server"],
+                [dict() for i in self.__supported_attributes["server"]],
+            ),
+        )
         self.__load_config(config_file)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.clear()
+        pass
 
     def __str__(self) -> str:
         return str(self.to_dict())
@@ -137,12 +168,6 @@ class UnboundConfig:
         }
 
     def __load_config(self, config_file: str = "/etc/unbound/unbound.conf"):
-        self.remote_control = UnboundConfig.__supported_attributes["remote-control"]
-        self.forward_zone = UnboundConfig.__supported_attributes["forward-zone"]
-        self.auth_zone = UnboundConfig.__supported_attributes["auth-zone"]
-        self.dnscrypt = UnboundConfig.__supported_attributes["dnscrypt"]
-        self.server = UnboundConfig.__supported_attributes["server"]
-
         with open(config_file, "r") as file:
             current_clause = ""
             line_nb = 0
@@ -153,7 +178,7 @@ class UnboundConfig:
                 if not entry.raw:
                     continue
                 # If this is a main clause, shift the current clause and continue reading
-                if entry.attribute in UnboundConfig.__supported_attributes.keys():
+                if entry.attribute in self.__supported_attributes.keys():
                     current_clause = entry.attribute.replace("-", "_")
                     continue
                 # If the attribute is a supported attribute for the clause, treat the entry
@@ -171,8 +196,38 @@ class UnboundConfig:
 
     def clear(self):
         """Clear the current configuration data."""
-        for attribute in UnboundConfig.__supported_attributes.keys():
+        for attribute in self.__supported_attributes.keys():
             getattr(self, attribute.replace("-", "_")).clear()
+        self.remote_control = dict(
+            zip(
+                self.__supported_attributes["remote-control"],
+                [dict() for i in self.__supported_attributes["remote-control"]],
+            ),
+        )
+        self.forward_zone = dict(
+            zip(
+                self.__supported_attributes["forward-zone"],
+                [dict() for i in self.__supported_attributes["forward-zone"]],
+            ),
+        )
+        self.auth_zone = dict(
+            zip(
+                self.__supported_attributes["auth-zone"],
+                [dict() for i in self.__supported_attributes["auth-zone"]],
+            ),
+        )
+        self.dnscrypt = dict(
+            zip(
+                self.__supported_attributes["dnscrypt"],
+                [dict() for i in self.__supported_attributes["dnscrypt"]],
+            ),
+        )
+        self.server = dict(
+            zip(
+                self.__supported_attributes["server"],
+                [dict() for i in self.__supported_attributes["server"]],
+            ),
+        )
 
     def reload_config(self, config_file: str = "/etc/unbound/unbound.conf"):
         self.clear()
@@ -181,10 +236,10 @@ class UnboundConfig:
     def make(self, target_file: str) -> str:
         """Create the config file from the stored config. The file must not be existant"""
         lines_to_write = list()
-        for clause in UnboundConfig.__supported_attributes.keys():
+        for clause in self.__supported_attributes.keys():
             clause_lines = list()
             clause_lines.append(f"{clause}:")
-            for attribute, data in UnboundConfig.__supported_attributes[clause].items():
+            for attribute, data in getattr(self, clause.replace("-", "_")).items():
                 for value_id, value in data.items():
                     clause_lines.append(f"  {attribute}: {value} #{value_id}")
             clause_lines.append("")
@@ -239,9 +294,9 @@ class UnboundConfig:
         """
         Returns all values for a given attribute
         """
-        if clause not in UnboundConfig.__supported_attributes.keys():
+        if clause not in self.__supported_attributes.keys():
             raise UnsupportedClauseError(clause)
-        elif attribute not in UnboundConfig.__supported_attributes[clause].keys():
+        elif attribute not in self.__supported_attributes[clause]:
             raise UnsupportedAttributeError(clause, attribute)
         return getattr(self, clause.replace("-", "_"))[attribute]
 
@@ -259,9 +314,9 @@ class UnboundConfig:
         Can create new attributes with ID=1
         """
         try:
-            if clause not in UnboundConfig.__supported_attributes.keys():
+            if clause not in self.__supported_attributes.keys():
                 raise UnsupportedClauseError(clause)
-            elif attribute not in UnboundConfig.__supported_attributes[clause].keys():
+            elif attribute not in self.__supported_attributes[clause]:
                 raise UnsupportedAttributeError(clause, attribute)
             self.get_value(clause, attribute, value_id)
         except UnknownIDError:
@@ -298,9 +353,9 @@ class UnboundConfig:
         Replace whole attribute if no id is specified
         """
         answer = dict()
-        if clause not in UnboundConfig.__supported_attributes.keys():
+        if clause not in self.__supported_attributes.keys():
             raise UnsupportedClauseError(clause)
-        elif attribute not in UnboundConfig.__supported_attributes[clause].keys():
+        elif attribute not in self.__supported_attributes[clause]:
             raise UnsupportedAttributeError(clause, attribute)
 
         if value_id:
@@ -309,7 +364,9 @@ class UnboundConfig:
             answer[value_id] = {
                 "id": value_id,
                 "old_value": old_value,
-                "new_value": value,
+                "new_value": getattr(self, clause.replace("-", "_"))[attribute][
+                    value_id
+                ],
             }
         else:
             for old_id, old_value in self.get_attribute(clause, attribute).items():
@@ -317,7 +374,7 @@ class UnboundConfig:
                     answer["1"] = {
                         "id": "1",
                         "old_value": old_value,
-                        "new_value": value,
+                        "new_value": "",
                     }
                 else:
                     answer[old_id] = {
@@ -326,6 +383,8 @@ class UnboundConfig:
                         "new_value": "",
                     }
             getattr(self, clause.replace("-", "_"))[attribute] = {"1": value}
+            for new_id, new_value in self.get_attribute(clause, attribute).items():
+                answer[new_id]["new_value"] = new_value
         return answer
 
     def delete_value(self, clause: str, attribute: str, value_id: str = "") -> dict:
@@ -335,9 +394,9 @@ class UnboundConfig:
         Can delete complete attribute if no id is specified
         """
         answer = dict()
-        if clause not in UnboundConfig.__supported_attributes.keys():
+        if clause not in self.__supported_attributes.keys():
             raise UnsupportedClauseError(clause)
-        elif attribute not in UnboundConfig.__supported_attributes[clause].keys():
+        elif attribute not in self.__supported_attributes[clause]:
             raise UnsupportedAttributeError(clause, attribute)
 
         if value_id:

@@ -1,5 +1,13 @@
 # Unbound API
 
+## Install and start
+
+```bash
+poetry build
+pipx install dist/unboundapi-*.whl
+unbound-api
+```
+
 ## Dev
 
 * Needed tooling

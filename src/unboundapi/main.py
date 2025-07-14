@@ -60,33 +60,41 @@ def value(operation, attribute, clause, value, value_id, config_file):
             response = config.create_value(clause, attribute, value, value_id)
             config.apply(config_file, tmp_file)
             click.echo(response)
+            return response
         else:
             msg = "Missing value argument for create operation"
             click.echo(msg, err=True)
+            return dict()
 
     elif operation == "read":
         if value_id:
-            click.echo(config.get_value(clause, attribute, value_id))
+            response = config.get_value(clause, attribute, value_id)
         else:
-            click.echo(json.dumps(config.get_attribute(clause, attribute)))
+            response = json.dumps(config.get_attribute(clause, attribute))
+        click.echo(response)
+        return response
 
     elif operation == "update":
         if value:
             response = config.update_value(clause, attribute, value, value_id)
             config.apply(config_file, tmp_file)
             click.echo(response)
+            return response
         else:
             msg = "Missing value argument for update operation"
             click.echo(msg, err=True)
+            return dict()
 
     elif operation == "delete":
         response = config.delete_value(clause, attribute, value_id)
         config.apply(config_file, tmp_file)
         click.echo(response)
+        return response
 
     else:
         msg = f"{operation} : Unsupported CRUD operation (create, read, update, delete)"
         click.echo(msg, err=True)
+        return dict()
 
 
 @cli.command()
@@ -99,6 +107,7 @@ def value(operation, attribute, clause, value, value_id, config_file):
 def reload(config_file):
     """
     Reloading the unbound service with new config if the config is valid
+    /!\\ Only works if unbound is running as a service on same host /!\\
     """
     config = get_config(config_file)
     result = config.validate(config_file)
@@ -106,8 +115,10 @@ def reload(config_file):
         click.echo("Valid config, reloading service...")
         config.reload_service()
         click.echo("Success !")
+        return {"status": "success"}
     else:
         click.echo(f"Invalid config :\n{result.stderr}", err=True)
+        return {"status": "invalid config"}
 
 
 if __name__ == "__main__":

@@ -13,12 +13,10 @@ setup_env:
     reports:
       dotenv: .env
   script:
-    - |
-      set -xeuo pipefail
-      echo $SHELL
-      # Extract tools versions from mise.toml
-      mise ls --offline --current --json | jq -r 'keys[] as $k | "\($k|ascii_upcase|gsub("-"; "_"))_VERSION=\(.[$k].[0] | .requested_version // .version)"' > .env
-      cat .env
+    - set -xeuo pipefail
+    - mise trust -a
+    - mise ls --offline --current --json | jq -r 'keys[] as $k | "\($k|ascii_upcase|gsub("-"; "_"))_VERSION=\(.[$k][0] | .requested_version // .version)"' > .env
+    - cat .env
 
 
 .poetry-setup:

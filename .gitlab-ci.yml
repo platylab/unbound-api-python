@@ -16,7 +16,7 @@ setup_env:
     - |
       set -xeuo pipefail
       # Extract tools versions from mise.toml
-      mise ls --offline --current --json | jq -r 'keys[] as $k | "\($k|ascii_upcase|gsub("-"; "_"))_VERSION=\("")\(.[$k].[0] | .resquested_version // .version)"' > .env
+      mise ls --offline --current --json | jq -r 'keys[] as $k | "\($k|ascii_upcase|gsub("-"; "_"))_VERSION=\("")\(.[$k].[0] | .requested_version // .version)"' > .env
       cat .env
 
 

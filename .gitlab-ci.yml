@@ -24,7 +24,7 @@ setup_env:
   needs:
     - setup_env
   before_script:
-    - set -xeuo pipefail
+    - poetry config virtualenvs.in-project true
     - poetry install --all-extras
     - eval "$(poetry env activate)"
 

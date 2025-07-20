@@ -1,0 +1,44 @@
+stages:
+  - setup
+  - lint
+  - test
+
+setup_env:
+  image: registry.git.platy.bzh/platylab/pipeline/bash-runner:latest
+  stage: setup
+  artifacts:
+    when: on_success
+    access: all
+    expire_in: 1h
+    reports:
+      dotenv: .env
+  script:
+    - |
+      set -xeuo pipefail
+      # Extract tools versions from mise.toml
+      mise ls --offline --current --json | jq -r 'keys[] as $k | "\($k|ascii_upcase|gsub("-"; "_"))_VERSION=\("")\(.[$k].[0] | .resquested_version // .version)"' > .env
+      cat .env
+
+
+.poetry-setup:
+  image: "registry.git.platy.bzh/platylab/python/poetry-runner:${PYTHON_VERSION}_${POETRY_VERSION}"
+  needs:
+    - setup_env
+  before_script:
+    - set -xeuo pipefail
+    - poetry install --all-extras
+    - eval "$(poetry env activate)"
+
+tox-lint:
+  extends: .poetry-setup
+  stage: lint
+  script:
+    - tox -e lint
+
+tox-test:
+  extends: .poetry-setup
+  needs:
+    - tox-lint
+  stage: test
+  script:
+    - tox

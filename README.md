@@ -43,5 +43,5 @@ make test
 * Use venv to run commands
 
 ```bash
-poetry shell
+eval $(poetry env activate)
 ```

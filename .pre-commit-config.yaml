@@ -15,10 +15,6 @@ repos:
           - --unsafe
       - id: check-symlinks
         stages: [pre-commit]
-      - id: detect-aws-credentials
-        stages: [pre-commit]
-        args:
-          - --allow-missing-credentials
       - id: check-added-large-files
         stages: [pre-commit]
       - id: detect-private-key
@@ -31,7 +27,7 @@ repos:
         stages: [pre-commit]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.3
+    rev: v0.12.4
     hooks:
       - id: ruff
         stages: [pre-commit]

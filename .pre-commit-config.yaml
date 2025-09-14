@@ -1,7 +1,7 @@
 default_install_hook_types: [commit-msg, pre-commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
         stages: [pre-commit]
@@ -21,13 +21,13 @@ repos:
         stages: [pre-commit]
 
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: 3.2.1
+    rev: 3.4.0
     hooks:
       - id: editorconfig-checker
         stages: [pre-commit]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.4
+    rev: v0.13.0
     hooks:
       - id: ruff
         stages: [pre-commit]
@@ -41,7 +41,7 @@ repos:
         stages: [pre-commit]
 
   - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.403
+    rev: v1.1.405
     hooks:
       - id: pyright
         stages: [pre-commit]
@@ -49,7 +49,7 @@ repos:
         entry: poetry run pyright
 
   - repo: https://github.com/tox-dev/tox-ini-fmt
-    rev: "1.5.0"
+    rev: "1.6.0"
     hooks:
       - id: tox-ini-fmt
         stages: [pre-commit]

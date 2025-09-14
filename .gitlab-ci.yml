@@ -50,6 +50,7 @@ poetry-publish:
     POETRY_PUBLISH_USERNAME: gitlab-ci-token
     POETRY_PUBLISH_PASSWORD: ${CI_JOB_TOKEN}
   needs:
+    - setup_env
     - tox-lint
     - tox-test
   rules:

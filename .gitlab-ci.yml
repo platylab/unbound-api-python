@@ -2,6 +2,7 @@ stages:
   - setup
   - lint
   - test
+  - release
 
 setup_env:
   image: registry.git.platy.bzh/platylab/pipeline/bash-runner:latest
@@ -39,3 +40,21 @@ tox-test:
   stage: test
   script:
     - tox
+
+poetry-publish:
+  extends: .poetry-setup
+  stage: release
+  variables:
+    POETRY_PUBLISH_REPOSITORY_NAME: pypi
+    POETRY_PUBLISH_PYPI_REPO_URL: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
+    POETRY_PUBLISH_USERNAME: gitlab-ci-token
+    POETRY_PUBLISH_PASSWORD: ${CI_JOB_TOKEN}
+  needs:
+    - tox-lint
+    - tox-test
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - poetry config repositories.${POETRY_PUBLISH_REPOSITORY_NAME} ${POETRY_PUBLISH_PYPI_REPO_URL}
+    - poetry config http-basic.${POETRY_PUBLISH_REPOSITORY_NAME} ${POETRY_PUBLISH_USERNAME} "${POETRY_PUBLISH_PASSWORD}"
+    - poetry publish --build --repository ${POETRY_PUBLISH_REPOSITORY_NAME}

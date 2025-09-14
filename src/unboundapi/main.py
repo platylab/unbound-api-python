@@ -47,6 +47,7 @@ def main(
                 if value:
                     response = config.create_value(clause, attribute, value, value_id)
                     config.apply(config_file, tmp_file)
+                    config.reload_service()
                 else:
                     raise MissingValueError(operation)
 
@@ -60,12 +61,14 @@ def main(
                 if value:
                     response = config.update_value(clause, attribute, value, value_id)
                     config.apply(config_file, tmp_file)
+                    config.reload_service()
                 else:
                     raise MissingValueError(operation)
 
             elif operation == "delete":
                 response = config.delete_value(clause, attribute, value_id)
                 config.apply(config_file, tmp_file)
+                config.reload_service()
 
             else:
                 raise UnsupportedOperationError(operation)

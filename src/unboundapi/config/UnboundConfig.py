@@ -338,7 +338,9 @@ class UnboundConfig:
 
         else:
             raise DuplicateIDError(value_id, attribute)
-        return {"id": value_id}
+        response = dict()
+        response[value_id] = value
+        return response
 
     def update_value(
         self,

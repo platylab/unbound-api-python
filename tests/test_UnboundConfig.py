@@ -133,7 +133,7 @@ def test_met__create_value():
             },
             "target": {
                 "output": {
-                    "id": "6",
+                    "6": '"test.example.com." static',
                 },
                 "error": "",
             },
@@ -148,7 +148,7 @@ def test_met__create_value():
             },
             "target": {
                 "output": {
-                    "id": "44",
+                    "44": '"www.test.example.com. IN A 1.2.3.4"',
                 },
                 "error": "",
             },

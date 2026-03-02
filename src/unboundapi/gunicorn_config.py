@@ -14,4 +14,6 @@ accesslog = os.environ.get("UNBOUNDAPI_ACCESSLOG", "-")
 errorlog = os.environ.get("UNBOUNDAPI_ERRORLOG", "-")
 
 # Custom access log format
-access_log_format = '%({x-forwarded-for}i)s %(l.md)s %(u.md)s %(t.md)s "%(r.md)s" %(s.md)s %(b.md)s "%(f.md)s" "%(a.md)s"'
+access_log_format = (
+    '%({x-forwarded-for}i)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
+)

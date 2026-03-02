@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "unboundapi"
-version = "0.3.1"
+version = "0.3.2"
 description = "REST Api for the Unbound DNS Server"
 authors = ["Arthur Réauté <arthur@platy.bzh>"]
 readme = "README.md"

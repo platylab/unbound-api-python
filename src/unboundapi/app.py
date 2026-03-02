@@ -1,3 +1,4 @@
+from dotenv import load_dotenv, find_dotenv
 from flask import Flask, request, jsonify
 from unboundapi.main import main as unbound_config
 from unboundapi.config.UnboundConfig import (
@@ -6,6 +7,9 @@ from unboundapi.config.UnboundConfig import (
     UnsupportedClauseError,
     UnsupportedAttributeError,
 )
+
+load_dotenv(find_dotenv())
+load_dotenv(find_dotenv(".env.local"))
 
 app = Flask(__name__)
 app.config["DEBUG"] = True

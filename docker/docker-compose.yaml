@@ -1,0 +1,48 @@
+
+services:
+  dns:
+    container_name: unbound-resolver
+    image: madnuttah/unbound:latest
+    ports:
+      - 5335:5335/tcp
+      - 5335:5335/udp
+    volumes:
+      - ./dns/unbound.conf:/usr/local/unbound/unbound.conf:ro
+      - ./dns/server.d/:/usr/local/unbound/server.d/:ro
+      - ./dns/ssl:/usr/local/unbound/ssl:ro
+      - ./dns/log.d:/usr/local/unbound/log.d:rw
+    environment:
+      DISABLE_SET_PERMS: true
+      # UNBOUND_UID: 1000
+      # UNBOUND_GID: 1000
+    user: _unbound
+    restart: unless-stopped
+    healthcheck:
+      test: /usr/local/unbound/sbin/healthcheck.sh
+      interval: 60s
+      retries: 5
+      start_period: 15s
+      timeout: 30s
+  api:
+    container_name: unbound-api
+    image: unbound-api:local
+    ports:
+      - 8642:8642/tcp
+    build:
+      context: .
+    environment:
+      UNBOUNDAPI_UNBOUND_CONF: /usr/local/unbound/unbound.conf
+      UNBOUNDAPI_UNBOUND_SERVER: dns
+      UNBOUNDAPI_BIND: "0.0.0.0:8642"
+      UNBOUNDAPI_PROCESSES: "2"
+      UNBOUNDAPI_THREADS: "4"
+      UNBOUNDAPI_TOKEN_EXPIRY: "3600"
+      UNBOUNDAPI_ACCESSLOG: /app/log/access.log
+      UNBOUNDAPI_ERRORLOG: /app/log/error.log
+    env_file:
+      - ./api/.env.local
+    volumes:
+      - ./dns/unbound.conf:/usr/local/unbound/unbound.conf:rw
+      - ./dns/ssl:/usr/local/unbound/ssl:ro
+      - ./api/logs:/app/log:rw
+    restart: unless-stopped

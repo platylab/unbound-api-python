@@ -1,47 +1,9 @@
 # Unbound API
 
-## Install and start
+## Docker
 
-```bash
-poetry build
-pipx install dist/unboundapi-*.whl
-unbound-api
-```
+Compatible with [madnuttah/unbound-docker](https://github.com/madnuttah/unbound-docker/)
 
-## Dev
+An example docker-compose is provided (do not use the provided sample SSL certs and .env.local in production !)
 
-* Needed tooling
-  * poetry
-  * pre-commit
-  * mise
-
-* Installing dependancies
-
-```bash
-make install
-```
-
-* Adding dependancies
-
-```bash
-poetry add <dependancy>
-```
-
-* Update dependancies
-
-```bash
-make update
-```
-
-* Testing
-
-```bash
-make check
-make test
-```
-
-* Use venv to run commands
-
-```bash
-eval $(poetry env activate)
-```
+## PIP

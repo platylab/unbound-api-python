@@ -1,4 +1,5 @@
 default_install_hook_types: [commit-msg, pre-commit]
+exclude: ^docker/dns/ssl/
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -21,13 +22,13 @@ repos:
         stages: [pre-commit]
 
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: 3.6.0
+    rev: 3.6.1
     hooks:
       - id: editorconfig-checker
         stages: [pre-commit]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.4
+    rev: v0.15.6
     hooks:
       - id: ruff
         stages: [pre-commit]

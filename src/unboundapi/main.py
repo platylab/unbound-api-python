@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import click
 import json
+import os
 from uuid import uuid4
 from unboundapi.config.UnboundConfig import UnboundConfig, UnboundConfigError
 
@@ -33,11 +34,16 @@ def main(
     attribute: str,
     value: str = "",
     value_id: str = "",
-    config_file: str = "/etc/unbound/unbound.conf",
+    config_file: str = "",
 ) -> dict:
     """
     CRUD operations on values (create, read, update, delete)
     """
+    if config_file == "":
+        config_file = os.environ.get(
+            "UNBOUNDAPI_UNBOUND_CONF",
+            "/etc/unbound/unbound.conf",
+        )
     response = dict()
     session_id = uuid4()
     tmp_file = f"/tmp/unbound_{session_id}.conf"
@@ -46,8 +52,8 @@ def main(
             if operation == "create":
                 if value:
                     response = config.create_value(clause, attribute, value, value_id)
-                    config.apply(config_file, tmp_file)
-                    config.reload_service()
+                    config.apply(tmp_file)
+                    config.reload_unbound()
                 else:
                     raise MissingValueError(operation)
 
@@ -60,15 +66,15 @@ def main(
             elif operation == "update":
                 if value:
                     response = config.update_value(clause, attribute, value, value_id)
-                    config.apply(config_file, tmp_file)
-                    config.reload_service()
+                    config.apply(tmp_file)
+                    config.reload_unbound()
                 else:
                     raise MissingValueError(operation)
 
             elif operation == "delete":
                 response = config.delete_value(clause, attribute, value_id)
-                config.apply(config_file, tmp_file)
-                config.reload_service()
+                config.apply(tmp_file)
+                config.reload_unbound()
 
             else:
                 raise UnsupportedOperationError(operation)
@@ -94,7 +100,7 @@ def cli():
 @click.option(
     "-f",
     "--config-file",
-    default="/etc/unbound/unbound.conf",
+    default="",
     help="Unbound config file (default: /etc/unbound/unbound.conf)",
 )
 @click.option(
@@ -113,6 +119,11 @@ def value(operation, clause, attribute, value, value_id, config_file):
     """
     CRUD operations on values (create, read, update, delete)
     """
+    if config_file == "":
+        config_file = os.environ.get(
+            "UNBOUNDAPI_UNBOUND_CONF",
+            "/etc/unbound/unbound.conf",
+        )
 
     try:
         click.echo(
@@ -128,7 +139,7 @@ def value(operation, clause, attribute, value, value_id, config_file):
 @click.option(
     "-f",
     "--config-file",
-    default="/etc/unbound/unbound.conf",
+    default="",
     help="Unbound config file (default: /etc/unbound/unbound.conf)",
 )
 def reload(config_file):
@@ -136,11 +147,16 @@ def reload(config_file):
     Reloading the unbound service with new config if the config is valid
     /!\\ Only works if unbound is running as a service on same host /!\\
     """
+    if config_file == "":
+        config_file = os.environ.get(
+            "UNBOUNDAPI_UNBOUND_CONF",
+            "/etc/unbound/unbound.conf",
+        )
     with UnboundConfig(config_file) as config:
-        result = config.validate(config_file)
+        result = config.validate()
         if result.returncode == 0:
             click.echo("Valid config, reloading service...")
-            config.reload_service()
+            config.reload_unbound()
             click.echo("Success !")
             return {"status": "success"}
         else:

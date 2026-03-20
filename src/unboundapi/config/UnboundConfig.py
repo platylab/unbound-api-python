@@ -2,6 +2,7 @@ from unboundapi.config.ConfigEntry import ConfigEntry
 import subprocess
 import os
 import shutil
+from socket import gethostbyname
 
 
 def cross_device_replace(src, dst):
@@ -77,6 +78,7 @@ class ValidateError(UnboundConfigError):
 
 class UnboundConfig:
     def __init__(self, config_file: str = "/etc/unbound/unbound.conf"):
+        self.config_file_path = config_file
         self.__supported_attributes = {
             "remote-control": [
                 "control-enable",
@@ -112,6 +114,7 @@ class UnboundConfig:
                 "serve-expired",
                 "serve-expired-ttl",
                 "serve-expired-client-timeout",
+                "include",
                 "local-zone",
                 "local-data",
             ],
@@ -146,7 +149,7 @@ class UnboundConfig:
                 [dict() for i in self.__supported_attributes["server"]],
             ),
         )
-        self.__load_config(config_file)
+        self.__load_config()
 
     def __enter__(self):
         return self
@@ -167,8 +170,8 @@ class UnboundConfig:
             "server": self.server,
         }
 
-    def __load_config(self, config_file: str = "/etc/unbound/unbound.conf"):
-        with open(config_file, "r") as file:
+    def __load_config(self):
+        with open(self.config_file_path, "r") as file:
             current_clause = ""
             line_nb = 0
             for line in file:
@@ -229,9 +232,9 @@ class UnboundConfig:
             ),
         )
 
-    def reload_config(self, config_file: str = "/etc/unbound/unbound.conf"):
+    def reload_config(self):
         self.clear()
-        self.__load_config(config_file)
+        self.__load_config()
 
     def make(self, target_file: str) -> str:
         """Create the config file from the stored config. The file must not be existant"""
@@ -252,31 +255,61 @@ class UnboundConfig:
 
     def validate(
         self,
-        target_file: str = "/etc/unbound/unbound.conf",
+        target_file: str = "",
     ) -> subprocess.CompletedProcess:
         """Verify that the created file is valid with unboud-checkconf"""
+        if target_file == "":
+            target_file = self.config_file_path
         return subprocess.run(
             ["unbound-checkconf", target_file],
             capture_output=True,
             text=True,
         )
 
-    def reload_service(self, service_name: str = "unbound.service"):
+    def get_unbound_ip(self):
         """
-        Reloads the unbound service
-        Raise the error subprocess.CalledProcessError if failed
+        Get the current ip where the unbound server is running
+        Useful when running in container mode
         """
-        subprocess.run(["systemctl", "reload", service_name], check=True)
+        ip = gethostbyname(os.getenv("UNBOUNDAPI_UNBOUND_SERVER", "localhost"))
+        return ip
 
-    def apply(self, target_file: str, tmp_file: str):
+    def reload_unbound(self):
+        """
+        Reloads unbound config with unbound-control
+        Particularly useful in containerized environment
+        """
+        control_enable = self.remote_control.get("control-enable")
+        if "yes" in [{} if not control_enable else control_enable][0].values():
+            control_ip = self.get_unbound_ip()
+            if "control-port" in self.remote_control:
+                control_port = self.remote_control["control-port"]["1"]
+            else:
+                control_port = "8953"
+            control_target = f"{control_ip}@{control_port}"
+            subprocess.run(
+                [
+                    "unbound-control",
+                    "-c",
+                    self.config_file_path,
+                    "-s",
+                    control_target,
+                    "fast_reload",
+                ],
+                check=True,
+            )
+        else:
+            pass
+
+    def apply(self, tmp_file: str):
         """
         Generates a temporary file and validate it
-        If OK, replaces the target_file
+        If OK, replaces the config
         """
         self.make(tmp_file)
         result = self.validate(tmp_file)
         if result.returncode == 0:
-            cross_device_replace(tmp_file, target_file)
+            cross_device_replace(tmp_file, self.config_file_path)
         else:
             raise ValidateError(tmp_file, result.stderr)
 
